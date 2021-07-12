@@ -9,6 +9,8 @@ import java.awt.HeadlessException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -37,6 +39,21 @@ public class FormMenu extends javax.swing.JFrame {
         TampilDataKategori();
         Tampil_cb_kategori();
         TampilDataBukuDibeli();
+        
+        //field yang tidak bisa diedit
+        txt_kodeBukuPenjualan.setEditable(false);
+        txt_judulBukuPenjualan.setEditable(false);
+        txt_kategoriBukuPenjualan.setEditable(false);
+        txt_hargaBukuPenjualan.setEditable(false);
+        txt_hargatotalPenjualan.setEditable(false);
+        
+        // auto increment
+        id_transaksi();
+        kode_customer();
+            txt_kodeCustomer.setEnabled(false);
+        
+        //Reset tabel
+        resettabel_daftarBukuDibeli();
     }
     
     public void KosongkanFormKategori(){
@@ -191,8 +208,8 @@ public class FormMenu extends javax.swing.JFrame {
     public void TampilDataBukuDibeli(){
         DefaultTableModel model = new DefaultTableModel();
         model.addColumn("No");
+        model.addColumn("Kode customer");
         model.addColumn("Tanggal");
-        model.addColumn("Kode Customer");
         model.addColumn("Kode Buku");
         model.addColumn("Judul Buku");
         model.addColumn("Kategori Buku");
@@ -231,8 +248,8 @@ public class FormMenu extends javax.swing.JFrame {
     
     public void KosongkanFormBukuDibeli(){
         txt_kodeCustomer.setEditable(true);
-        txt_kodeCustomer.setText(null);
-        txt_tglPenjualan.setDate(null);
+//        txt_kodeCustomer.setText(null);
+//        txt_tglPenjualan.setDate(null);
         txt_kodeBukuPenjualan.setText(null);
         txt_judulBukuPenjualan.setText(null);
         txt_kategoriBukuPenjualan.setText(null);
@@ -241,6 +258,137 @@ public class FormMenu extends javax.swing.JFrame {
         txt_totalhargaBukuPenjualan.setText(null);
     }
     
+    public void bayarKembalian(){
+        double byr,totalHarga,kembalian;
+        totalHarga = Double.parseDouble(txt_hargatotalPenjualan.getText());
+        byr = Double.parseDouble(txt_bayar.getText());
+        kembalian = byr-totalHarga;
+        String x = String.valueOf(" "+kembalian);
+        txt_kembalian.setText(x);
+    }
+    
+     public void TampilDataPenjualan(){
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("No");
+        model.addColumn("Id transaksi");
+        model.addColumn("Tanggal");
+        model.addColumn("Id Kasir");
+        model.addColumn("Kode Customer");
+        model.addColumn("Total Harga");
+        model.addColumn("Pembayaran");
+        model.addColumn("Kembalian");
+        
+    
+        //Menampilkan data pada database ke dalam tabel
+        try {
+            int no=1;
+            String sql="SELECT * FROM penjualan";
+            java.sql.Connection conn=(Connection)Konfig.configDB();
+            
+            java.sql.Statement stm=conn.createStatement();
+            
+            java.sql.ResultSet res=stm.executeQuery(sql);
+            
+           while (res.next()){
+           model.addRow(new Object[]{
+               no++,
+               res.getString(1), 
+               res.getString(2), 
+               res.getString(3), 
+               res.getString(4),
+               res.getString(5),
+               res.getString(6),
+               res.getString(7)});
+            }
+            tabelBukuDibeli.setModel(model);
+        
+        } catch(SQLException e){
+            System.out.println("Error " + e.getMessage());
+        }
+    }
+     
+     public void id_transaksi(){
+         try{
+            String sql="SELECT * FROM penjualan order by id_transaksi desc";
+            java.sql.Connection conn=(Connection)Konfig.configDB();
+            
+            java.sql.Statement stm=conn.createStatement();
+            
+            java.sql.ResultSet res=stm.executeQuery(sql);
+            
+            if(res.next()){
+                String kode = res.getString("id_transaksi").substring(1);
+                String AN = "" +(Integer.parseInt(kode) + 1);
+                String Nol = " ";
+                
+                if(AN.length()==1)
+                {Nol = "00";}
+                    else if(AN.length()==2)
+                     {Nol = "0";}
+                     else if(AN.length()==3)
+                       {Nol = "0";}
+                       
+                       id_transaksi.setText("T"+Nol+AN);
+                       
+                       
+            }else{
+                id_transaksi.setText("T001");
+            }   
+         }
+         
+         catch(Exception e){
+             JOptionPane.showMessageDialog(null, e);
+         }
+     }
+     
+     public void kode_customer(){
+         try{
+            String sql="SELECT * FROM daftarbuku_dibeli order by kodecustomer desc";
+            java.sql.Connection conn=(Connection)Konfig.configDB();
+            
+            java.sql.Statement stm=conn.createStatement();
+            
+            java.sql.ResultSet res=stm.executeQuery(sql);
+            
+            if(res.next()){
+                String kode = res.getString("kodecustomer").substring(1);
+                String AN = "" +(Integer.parseInt(kode) + 1);
+                String Nol = " ";
+                
+                if(AN.length()==1)
+                {Nol = "00";}
+                    else if(AN.length()==2)
+                     {Nol = "0";}
+                     else if(AN.length()==3)
+                       {Nol = "0";}
+                       
+                       txt_kodeCustomer.setText("C"+Nol+AN);
+                       
+                       
+            }else{
+                txt_kodeCustomer.setText("C001");
+            }   
+         }
+         
+         catch(Exception e){
+             JOptionPane.showMessageDialog(null, e);
+         }
+     }
+
+     public void resettabel_daftarBukuDibeli(){
+         try{
+            String sql="DELETE FROM daftarbuku_dibeli ";
+            
+            java.sql.Connection conn=(Connection)Konfig.configDB();
+            java.sql.PreparedStatement pstm=conn.prepareStatement(sql);
+            pstm.execute();
+            TampilDataBukuDibeli();
+            KosongkanFormBukuDibeli();
+            
+        }catch (HeadlessException | SQLException e){
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+     }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -265,6 +413,8 @@ public class FormMenu extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         btn_dataPenjualan = new javax.swing.JButton();
         jButton8 = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel20 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jp_kategori = new javax.swing.JPanel();
         jp11 = new javax.swing.JPanel();
@@ -322,7 +472,6 @@ public class FormMenu extends javax.swing.JFrame {
         jScrollPane6 = new javax.swing.JScrollPane();
         tabelBukuDibeli = new javax.swing.JTable();
         txt_bayar = new javax.swing.JTextField();
-        txt_kembalian = new javax.swing.JTextField();
         txt_hargatotalPenjualan = new javax.swing.JTextField();
         jButton5 = new javax.swing.JButton();
         btn_inputDataPenjualan = new javax.swing.JButton();
@@ -350,6 +499,9 @@ public class FormMenu extends javax.swing.JFrame {
         txt_tglPenjualan = new com.toedter.calendar.JDateChooser();
         jLabel19 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        txt_kembalian = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        id_transaksi = new javax.swing.JTextField();
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -465,8 +617,38 @@ public class FormMenu extends javax.swing.JFrame {
                 .addComponent(btn_penjualan, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btn_dataPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton8))
+        );
+
+        jLabel20.setText("Hello");
+
+        label_username.setText(".");
+        label_username.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                label_usernameKeyReleased(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(jLabel20)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(label_username, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(116, Short.MAX_VALUE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addContainerGap(71, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel20)
+                    .addComponent(label_username))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -477,11 +659,16 @@ public class FormMenu extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(75, 75, 75)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -933,7 +1120,18 @@ public class FormMenu extends javax.swing.JFrame {
                 return types [columnIndex];
             }
         });
+        tabelBukuDibeli.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tabelBukuDibeliMouseClicked(evt);
+            }
+        });
         jScrollPane6.setViewportView(tabelBukuDibeli);
+
+        txt_bayar.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txt_bayarKeyReleased(evt);
+            }
+        });
 
         jButton5.setText("Proses");
         jButton5.addActionListener(new java.awt.event.ActionListener() {
@@ -986,6 +1184,18 @@ public class FormMenu extends javax.swing.JFrame {
 
         jLabel33.setText("Total Harga");
 
+        txt_hargaBukuPenjualan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_hargaBukuPenjualanActionPerformed(evt);
+            }
+        });
+
+        txt_totalhargaBukuPenjualan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_totalhargaBukuPenjualanActionPerformed(evt);
+            }
+        });
+
         jLabel34.setText("Kode Customer");
 
         txt_kodeCustomer.addActionListener(new java.awt.event.ActionListener() {
@@ -1027,7 +1237,7 @@ public class FormMenu extends javax.swing.JFrame {
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanelDataPenjualanLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txt_kodeCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE)
+                            .addComponent(txt_kodeCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
                             .addComponent(txt_tglPenjualan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
         );
         jPanelDataPenjualanLayout.setVerticalGroup(
@@ -1077,14 +1287,21 @@ public class FormMenu extends javax.swing.JFrame {
             }
         });
 
+        txt_kembalian.setText("0");
+
+        jLabel12.setText("Rp. ");
+
+        id_transaksi.setText(" ");
+        id_transaksi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                id_transaksiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jp31Layout = new javax.swing.GroupLayout(jp31);
         jp31.setLayout(jp31Layout);
         jp31Layout.setHorizontalGroup(
             jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jp31Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane4)
-                .addGap(20, 20, 20))
             .addGroup(jp31Layout.createSequentialGroup()
                 .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jp31Layout.createSequentialGroup()
@@ -1094,9 +1311,15 @@ public class FormMenu extends javax.swing.JFrame {
                         .addComponent(jTextField14, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jp31Layout.createSequentialGroup()
                         .addGap(370, 370, 370)
-                        .addComponent(jLabel19))
+                        .addComponent(jLabel19)))
+                .addGap(105, 105, 105))
+            .addGroup(jp31Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jp31Layout.createSequentialGroup()
-                        .addContainerGap()
+                        .addComponent(jScrollPane4)
+                        .addGap(20, 20, 20))
+                    .addGroup(jp31Layout.createSequentialGroup()
                         .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jp31Layout.createSequentialGroup()
                                 .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1104,6 +1327,12 @@ public class FormMenu extends javax.swing.JFrame {
                                 .addComponent(btn_inputDataPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jPanelDataPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jp31Layout.createSequentialGroup()
+                                .addGap(189, 189, 189)
+                                .addComponent(jLabel26))
+                            .addGroup(jp31Layout.createSequentialGroup()
+                                .addGap(11, 11, 11)
+                                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 524, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jp31Layout.createSequentialGroup()
                                 .addGap(67, 67, 67)
                                 .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1115,25 +1344,25 @@ public class FormMenu extends javax.swing.JFrame {
                                             .addComponent(jButton4))
                                         .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addGroup(jp31Layout.createSequentialGroup()
-                                                .addGap(78, 78, 78)
+                                                .addGap(51, 51, 51)
                                                 .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(txt_kembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(txt_hargatotalPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                    .addComponent(txt_bayar, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                    .addComponent(txt_bayar, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addComponent(txt_hargatotalPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                             .addGroup(jp31Layout.createSequentialGroup()
                                                 .addGap(43, 43, 43)
-                                                .addComponent(jToggleButton5))))
+                                                .addComponent(jToggleButton5))
+                                            .addGroup(jp31Layout.createSequentialGroup()
+                                                .addGap(50, 50, 50)
+                                                .addComponent(jLabel12)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txt_kembalian))))
                                     .addGroup(jp31Layout.createSequentialGroup()
                                         .addComponent(jToggleButton2)
                                         .addGap(35, 35, 35)
-                                        .addComponent(jButton1))))
-                            .addGroup(jp31Layout.createSequentialGroup()
-                                .addGap(11, 11, 11)
-                                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 524, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jp31Layout.createSequentialGroup()
-                                .addGap(189, 189, 189)
-                                .addComponent(jLabel26)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(jButton1)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(id_transaksi, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(137, 137, 137))))))
         );
         jp31Layout.setVerticalGroup(
             jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1153,16 +1382,18 @@ public class FormMenu extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jp31Layout.createSequentialGroup()
-                                .addGap(39, 39, 39)
-                                .addComponent(txt_hargatotalPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jp31Layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jToggleButton2)
                                     .addComponent(jButton1))
                                 .addGap(18, 18, 18)
-                                .addComponent(jLabel25)))
+                                .addComponent(jLabel25))
+                            .addGroup(jp31Layout.createSequentialGroup()
+                                .addGap(39, 39, 39)
+                                .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(txt_hargatotalPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(id_transaksi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addGap(18, 18, 18)
                         .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(txt_bayar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1170,7 +1401,8 @@ public class FormMenu extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel24)
-                            .addComponent(txt_kembalian, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(txt_kembalian)
+                            .addComponent(jLabel12)))
                     .addComponent(jPanelDataPenjualan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1270,6 +1502,7 @@ public class FormMenu extends javax.swing.JFrame {
     private void btn_penjualanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_penjualanActionPerformed
         // TODO add your handling code here:
         TampilDataBukuPenjualan();
+//        id_transaksi.setVisible(false);
     }//GEN-LAST:event_btn_penjualanActionPerformed
 
     private void btn_penjualanMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_penjualanMouseClicked
@@ -1290,10 +1523,13 @@ public class FormMenu extends javax.swing.JFrame {
 
     private void btn_inputDataPenjualanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_inputDataPenjualanActionPerformed
         // TODO add your handling code here:
+        String tampilan="yyyy-MM-dd";
+        SimpleDateFormat sdf = new SimpleDateFormat(tampilan);
+        String tanggal = String.valueOf(sdf.format(txt_tglPenjualan.getDate()));
         try{
             String sql="INSERT INTO daftarbuku_dibeli VALUES('" 
                     + txt_kodeCustomer.getText()+"',"
-                    + "'" + txt_tglPenjualan.getDate()+"',"
+                    + "'" + tanggal +"',"
                     + "'" + txt_kodeBukuPenjualan.getText()+"',"
                     + "'" + txt_judulBukuPenjualan.getText()+"',"
                     + "'" + txt_kategoriBukuPenjualan.getText()+"',"
@@ -1317,12 +1553,40 @@ public class FormMenu extends javax.swing.JFrame {
 
     private void jToggleButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton5ActionPerformed
         // TODO add your handling code here:
+        String tampilan="yyyy-MM-dd";
+        SimpleDateFormat sdf = new SimpleDateFormat(tampilan);
+        String tanggal = String.valueOf(sdf.format(txt_tglPenjualan.getDate()));
+         try{
+            String sql="INSERT INTO penjualan VALUES('" 
+                    + id_transaksi.getText()+"',"
+                    + "'" + tanggal +"',"
+                    + "'" + label_username.getText()+"',"
+                    + "'" + txt_kodeCustomer.getText()+"',"
+                    + "'" + txt_hargatotalPenjualan.getText()+"'," 
+                    + "'" + txt_bayar.getText()+"',"
+                    + "'" + txt_kembalian.getText()+"')";
+        
+            java.sql.Connection conn=(Connection)Konfig.configDB();
+            
+            java.sql.PreparedStatement pstm=conn.prepareStatement(sql);
+            pstm.execute();
+            
+            JOptionPane.showMessageDialog(null, "Simpan data baru berhasil");
+            
+        } catch (HeadlessException | SQLException e){
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+         id_transaksi();
+         kode_customer();
+         resettabel_daftarBukuDibeli();
     }//GEN-LAST:event_jToggleButton5ActionPerformed
 
     private void btn_dataPenjualanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_dataPenjualanActionPerformed
         // TODO add your handling code here:
         FormDataPenjualan fdp = new FormDataPenjualan();
         fdp.setVisible(true);
+        
+        
     }//GEN-LAST:event_btn_dataPenjualanActionPerformed
 
     private void txt_idKategoriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_idKategoriActionPerformed
@@ -1569,7 +1833,7 @@ public class FormMenu extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         try{
-            String sql="DELETE FROM daftarbuku_dibeli WHERE kode_customer='" + txt_kodeCustomer.getText()+"'";
+            String sql="DELETE FROM daftarbuku_dibeli WHERE judulbuku='" + txt_judulBukuPenjualan.getText()+"'";
             
             java.sql.Connection conn=(Connection)Konfig.configDB();
             java.sql.PreparedStatement pstm=conn.prepareStatement(sql);
@@ -1600,6 +1864,61 @@ public class FormMenu extends javax.swing.JFrame {
         // TODO add your handling code here:
         KosongkanFormKategori();
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void txt_bayarKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_bayarKeyReleased
+        // TODO add your handling code here:
+        bayarKembalian();
+    }//GEN-LAST:event_txt_bayarKeyReleased
+
+    private void label_usernameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_label_usernameKeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_label_usernameKeyReleased
+
+    private void txt_hargaBukuPenjualanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_hargaBukuPenjualanActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_hargaBukuPenjualanActionPerformed
+
+    private void id_transaksiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_id_transaksiActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_id_transaksiActionPerformed
+
+    private void tabelBukuDibeliMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabelBukuDibeliMouseClicked
+        // TODO add your handling code here:
+//       String tampilan="yyyy-MM-dd";
+//        SimpleDateFormat sdf = new SimpleDateFormat(tampilan);
+//        String t = String.valueOf(sdf.format(txt_tglPenjualan.getDate()));
+        
+        txt_kodeCustomer.setEditable(false);
+        
+        int baris=tabelBukuDibeli.rowAtPoint(evt.getPoint());
+        
+        String kode=tabelBukuDibeli.getValueAt(baris,1).toString();        
+        txt_kodeCustomer.setText(kode);
+        
+        
+        
+        String kbPenjualan=tabelBukuDibeli.getValueAt(baris,3).toString();
+        txt_kodeBukuPenjualan.setText(kbPenjualan);
+        
+        String jbPenjualan=tabelBukuDibeli.getValueAt(baris,4).toString();
+        txt_judulBukuPenjualan.setText(jbPenjualan);
+        
+        String kbPenjualann=tabelBukuDibeli.getValueAt(baris,5).toString();
+        txt_kategoriBukuPenjualan.setText(kbPenjualann);
+        
+        String hbPenjualan=tabelBukuDibeli.getValueAt(baris,6).toString();
+        txt_hargaBukuPenjualan.setText(hbPenjualan);
+        
+        String jbPenjualann=tabelBukuDibeli.getValueAt(baris,7).toString();
+        txt_jumlahBukuPenjualan.setText(jbPenjualann);
+        
+        String thPenjualan=tabelBukuDibeli.getValueAt(baris,8).toString();
+        txt_totalhargaBukuPenjualan.setText(thPenjualan);
+    }//GEN-LAST:event_tabelBukuDibeliMouseClicked
+
+    private void txt_totalhargaBukuPenjualanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_totalhargaBukuPenjualanActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_totalhargaBukuPenjualanActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1652,6 +1971,7 @@ public class FormMenu extends javax.swing.JFrame {
     private javax.swing.JButton btn_simpanKategori;
     private javax.swing.JButton bttn_simpanBuku;
     private javax.swing.JComboBox<String> cb_kategori;
+    private javax.swing.JTextField id_transaksi;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton4;
@@ -1661,6 +1981,7 @@ public class FormMenu extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
@@ -1669,6 +1990,7 @@ public class FormMenu extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
@@ -1690,6 +2012,7 @@ public class FormMenu extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanelDataPenjualan;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
@@ -1715,6 +2038,7 @@ public class FormMenu extends javax.swing.JFrame {
     private javax.swing.JPanel jp_buku;
     private javax.swing.JPanel jp_kategori;
     private javax.swing.JPanel jp_penjualan;
+    public static final javax.swing.JLabel label_username = new javax.swing.JLabel();
     private javax.swing.JTable tabelBuku;
     private javax.swing.JTable tabelBukuDibeli;
     private javax.swing.JTable tabelBukuPenjualan;
@@ -1728,7 +2052,7 @@ public class FormMenu extends javax.swing.JFrame {
     private javax.swing.JTextField txt_judulBukuPenjualan;
     private javax.swing.JTextField txt_jumlahBukuPenjualan;
     private javax.swing.JTextField txt_kategoriBukuPenjualan;
-    private javax.swing.JTextField txt_kembalian;
+    private javax.swing.JLabel txt_kembalian;
     private javax.swing.JTextField txt_kodeBuku;
     private javax.swing.JTextField txt_kodeBukuPenjualan;
     private javax.swing.JTextField txt_kodeCustomer;

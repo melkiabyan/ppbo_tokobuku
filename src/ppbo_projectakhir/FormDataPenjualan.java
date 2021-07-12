@@ -5,6 +5,10 @@
  */
 package ppbo_projectakhir;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Yn
@@ -16,6 +20,8 @@ public class FormDataPenjualan extends javax.swing.JFrame {
      */
     public FormDataPenjualan() {
         initComponents();
+        
+        TampilDataPenjualan();
     }
     
     /**
@@ -32,7 +38,7 @@ public class FormDataPenjualan extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tabelPenjualan = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -71,7 +77,7 @@ public class FormDataPenjualan extends javax.swing.JFrame {
                 .addGap(23, 23, 23))
         );
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tabelPenjualan.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -82,7 +88,7 @@ public class FormDataPenjualan extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tabelPenjualan);
 
         jLabel2.setText("DATA PENJUALAN");
 
@@ -158,6 +164,44 @@ public class FormDataPenjualan extends javax.swing.JFrame {
             }
         });
     }
+    
+    public void TampilDataPenjualan(){
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("Id transaksi");
+        model.addColumn("Tanggal");
+        model.addColumn("Id Kasir");
+        model.addColumn("Kode Customer");
+        model.addColumn("Total Harga");
+        model.addColumn("Pembayaran");
+        model.addColumn("Kembalian");
+        
+    
+        //Menampilkan data pada database ke dalam tabel
+        try {
+            int no=1;
+            String sql="SELECT * FROM penjualan";
+            java.sql.Connection conn=(Connection)Konfig.configDB();
+            
+            java.sql.Statement stm=conn.createStatement();
+            
+            java.sql.ResultSet res=stm.executeQuery(sql);
+            
+           while (res.next()){
+           model.addRow(new Object[]{
+               res.getString(1), 
+               res.getString(2), 
+               res.getString(3), 
+               res.getString(4),
+               res.getString(5),
+               res.getString(6),
+               res.getString(7)});
+            }
+            tabelPenjualan.setModel(model);
+        
+        } catch(SQLException e){
+            System.out.println("Error " + e.getMessage());
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
@@ -165,7 +209,7 @@ public class FormDataPenjualan extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JTable tabelPenjualan;
     // End of variables declaration//GEN-END:variables
 }

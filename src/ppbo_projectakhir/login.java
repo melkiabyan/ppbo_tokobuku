@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
+import static ppbo_projectakhir.FormMenu.label_username;
 /**
  *
  * @author Yn
@@ -28,6 +29,7 @@ public class login extends javax.swing.JFrame {
         con = DB.con;
         stat = DB.stm;
     }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -60,6 +62,12 @@ public class login extends javax.swing.JFrame {
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField1ActionPerformed(evt);
+            }
+        });
+
+        jPasswordField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jPasswordField1ActionPerformed(evt);
             }
         });
 
@@ -120,12 +128,13 @@ public class login extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
        try {
             sql = "SELECT * FROM login WHERE username='"+jTextField1.getText()+"' AND password='"+jPasswordField1.getText()+"'";
-            rs = stat.executeQuery(sql);
+            rs = stat.executeQuery(sql);            
             if(rs.next()){
                 if(jTextField1.getText().equals(rs.getString("username")) && jPasswordField1.getText().equals(rs.getString("password"))){
                     JOptionPane.showMessageDialog(null, "berhasil login");
                     FormMenu f1 = new FormMenu();
                     f1.setVisible(true);
+                    label_username.setText(rs.getString(2));
                     this.dispose();
                 }
             }else{
@@ -136,9 +145,13 @@ public class login extends javax.swing.JFrame {
         }
     }                                        
 
-    private void jPasswordField1ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void jPasswordField1ActionPerformed1(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jPasswordField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jPasswordField1ActionPerformed
 
     /**
      * @param args the command line arguments
