@@ -8,13 +8,17 @@ package ppbo_projectakhir;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.RowFilter;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableRowSorter;
+
 
 /**
  *
  * @author Yn
  */
 public class FormDataPenjualan extends javax.swing.JFrame {
-
+    private DefaultTableModel model;
     /**
      * Creates new form FormDataPenjualan
      */
@@ -22,6 +26,50 @@ public class FormDataPenjualan extends javax.swing.JFrame {
         initComponents();
         
         TampilDataPenjualan();
+    }
+    
+     public void TampilDataPenjualan(){
+        model = new DefaultTableModel();
+        
+        model.addColumn("Id transaksi");
+        model.addColumn("Tanggal");
+        model.addColumn("Kode Transaksi");
+        model.addColumn("Username Kasir");
+        model.addColumn("Kode Customer");
+        model.addColumn("Kode Buku");
+        model.addColumn("Judul Buku");
+        model.addColumn("Harga Buku");
+        model.addColumn("Jumlah ");
+        model.addColumn("Total Harga");
+        
+        //Menampilkan data pada database ke dalam tabel
+        try {
+            int no=1;
+            String sql="SELECT * FROM penjualan";
+            java.sql.Connection conn=(Connection)Konfig.configDB();
+            
+            java.sql.Statement stm=conn.createStatement();
+            
+            java.sql.ResultSet res=stm.executeQuery(sql);
+            
+           while (res.next()){
+           model.addRow(new Object[]{
+               res.getString(1), 
+               res.getString(2), 
+               res.getString(3), 
+               res.getString(4),
+               res.getString(5),
+               res.getString(6),
+               res.getString(7),
+               res.getString(8),
+               res.getString(9),
+               res.getString(10)});
+            }
+            tabelPenjualan.setModel(model);
+        
+        } catch(SQLException e){
+            System.out.println("Error " + e.getMessage());
+        }
     }
     
     /**
@@ -35,19 +83,25 @@ public class FormDataPenjualan extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        cariDataPenjualan = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tabelPenjualan = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jLabel1.setText("Cari");
 
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        cariDataPenjualan.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                cariDataPenjualanActionPerformed(evt);
+            }
+        });
+        cariDataPenjualan.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                cariDataPenjualanKeyReleased(evt);
             }
         });
 
@@ -58,13 +112,13 @@ public class FormDataPenjualan extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(81, 81, 81)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(53, 53, 53)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(30, 30, 30)
+                .addComponent(cariDataPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(57, 57, 57)
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(60, 60, 60))
+                .addGap(249, 249, 249))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -72,7 +126,7 @@ public class FormDataPenjualan extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cariDataPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1))
                 .addGap(23, 23, 23))
         );
@@ -92,6 +146,13 @@ public class FormDataPenjualan extends javax.swing.JFrame {
 
         jLabel2.setText("DATA PENJUALAN");
 
+        jButton2.setText("Kembali");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -102,33 +163,57 @@ public class FormDataPenjualan extends javax.swing.JFrame {
                         .addContainerGap()
                         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(299, 299, 299)
-                        .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(502, 502, 502)
+                                .addComponent(jLabel2))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(86, 86, 86)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jButton2)
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 956, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(0, 53, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 88, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 544, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(70, 70, 70))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(47, 47, 47)
+                .addGap(58, 58, 58)
                 .addComponent(jLabel2)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(55, Short.MAX_VALUE))
+                .addGap(39, 39, 39)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton2)
+                .addContainerGap(63, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+    private void cariDataPenjualanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cariDataPenjualanActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    }//GEN-LAST:event_cariDataPenjualanActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        this.hide();
+        FormMenu fm = new FormMenu();
+        fm.setVisible(true);
+       
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void cariDataPenjualanKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_cariDataPenjualanKeyReleased
+        // TODO add your handling code here:
+        String cari = cariDataPenjualan.getText();
+        TableRowSorter tr = new TableRowSorter(model);
+        tabelPenjualan.setRowSorter(tr);
+        
+        tr.setRowFilter(RowFilter.regexFilter( cari ));
+        
+        TampilDataPenjualan();
+    }//GEN-LAST:event_cariDataPenjualanKeyReleased
 
     /**
      * @param args the command line arguments
@@ -165,51 +250,17 @@ public class FormDataPenjualan extends javax.swing.JFrame {
         });
     }
     
-    public void TampilDataPenjualan(){
-        DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("Id transaksi");
-        model.addColumn("Tanggal");
-        model.addColumn("Id Kasir");
-        model.addColumn("Kode Customer");
-        model.addColumn("Total Harga");
-        model.addColumn("Pembayaran");
-        model.addColumn("Kembalian");
-        
-    
-        //Menampilkan data pada database ke dalam tabel
-        try {
-            int no=1;
-            String sql="SELECT * FROM penjualan";
-            java.sql.Connection conn=(Connection)Konfig.configDB();
-            
-            java.sql.Statement stm=conn.createStatement();
-            
-            java.sql.ResultSet res=stm.executeQuery(sql);
-            
-           while (res.next()){
-           model.addRow(new Object[]{
-               res.getString(1), 
-               res.getString(2), 
-               res.getString(3), 
-               res.getString(4),
-               res.getString(5),
-               res.getString(6),
-               res.getString(7)});
-            }
-            tabelPenjualan.setModel(model);
-        
-        } catch(SQLException e){
-            System.out.println("Error " + e.getMessage());
-        }
-    }
+ 
+   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField cariDataPenjualan;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JTable tabelPenjualan;
     // End of variables declaration//GEN-END:variables
 }
