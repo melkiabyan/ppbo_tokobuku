@@ -29,8 +29,7 @@ public class FormMenu extends javax.swing.JFrame {
     public FormMenu() {
         initComponents();
         
-        
-        
+         
         jp_kategori.setVisible(true);
         jp_buku.setVisible(false);
             jp21.setVisible(false);
@@ -217,9 +216,9 @@ public class FormMenu extends javax.swing.JFrame {
                 cb_kategori.addItem(res.getString("nama_kategori"));
             }
             
-            res.last();
-            int jumlahdata = res.getRow();
-            res.first();
+//            res.last();
+//            int jumlahdata = res.getRow();
+//            res.first();
         } catch (HeadlessException | SQLException e){
             JOptionPane.showMessageDialog(this, e.getMessage());
         }
@@ -233,8 +232,7 @@ public class FormMenu extends javax.swing.JFrame {
         totalHarga = Double.parseDouble(txt_hargatotalPenjualan.getText());
         byr = Double.parseDouble(txt_bayar.getText());
         kembalian = byr-totalHarga;
-        String x = String.valueOf(" "+kembalian);
-        txt_kembalian.setText(x);
+         txt_kembalian.setText(String.valueOf(kembalian));
     }
     
 
@@ -454,6 +452,7 @@ public class FormMenu extends javax.swing.JFrame {
         txt_kembalian = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         txt_tglPenjualan = new com.toedter.calendar.JDateChooser();
+        jButton1 = new javax.swing.JButton();
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -1302,6 +1301,13 @@ public class FormMenu extends javax.swing.JFrame {
                 .addGap(47, 47, 47))
         );
 
+        jButton1.setText("Selesaikan Pembayaran");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jp31Layout = new javax.swing.GroupLayout(jp31);
         jp31.setLayout(jp31Layout);
         jp31Layout.setHorizontalGroup(
@@ -1325,7 +1331,10 @@ public class FormMenu extends javax.swing.JFrame {
                                     .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGap(50, 50, 50)
                             .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jToggleButton5)
+                                .addGroup(jp31Layout.createSequentialGroup()
+                                    .addComponent(jToggleButton5)
+                                    .addGap(33, 33, 33)
+                                    .addComponent(jButton1))
                                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(jp31Layout.createSequentialGroup()
                         .addGap(382, 382, 382)
@@ -1352,7 +1361,8 @@ public class FormMenu extends javax.swing.JFrame {
                 .addGap(26, 26, 26)
                 .addGroup(jp31Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton5)
-                    .addComponent(jToggleButton5))
+                    .addComponent(jToggleButton5)
+                    .addComponent(jButton1))
                 .addGap(36, 36, 36))
         );
 
@@ -1822,6 +1832,29 @@ public class FormMenu extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton8ActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        try{
+            double kembalian;
+            int bayar = Integer.parseInt(txt_bayar.getText());
+             kembalian = Double.parseDouble(txt_kembalian.getText());
+            String sql="INSERT INTO pembayaran VALUES('" 
+                    + txt_kodeTransaksi.getText()+"',"
+                    + "'" + bayar +"',"
+                    + "'" + kembalian +"')";
+        
+            java.sql.Connection conn=(Connection)Konfig.configDB();
+            
+            java.sql.PreparedStatement pstm=conn.prepareStatement(sql);
+            pstm.execute();
+            
+            JOptionPane.showMessageDialog(null, "Simpan data baru berhasil");
+            
+        } catch (HeadlessException | SQLException e){
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1876,6 +1909,7 @@ public class FormMenu extends javax.swing.JFrame {
     private javax.swing.JTextField cariKategori;
     private javax.swing.JComboBox<String> cb_kategori;
     private javax.swing.JTextField id_transaksi;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton8;
